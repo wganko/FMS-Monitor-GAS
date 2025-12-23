@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8" />
+    <title>FMS Monitor Dashboard</title>
+
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        margin: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 16px;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 1200px;
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 6px 8px;
+        font-size: 13px;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f2f2f2;
+        text-align: left;
+      }
+
+      tr:nth-child(even) td {
+        background: #fafafa;
+      }
+
+      /* ステータス色分け */
+      .status-OK {
+        color: #006400;
+        font-weight: bold;
+      }
+
+      .status-WARN {
+        color: #b8860b;
+        font-weight: bold;
+      }
+
+      .status-CRIT {
+        color: #b22222;
+        font-weight: bold;
+      }
+
+      /* 改行を反映させる */
+      .multiline {
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>FMS Monitor Dashboard</h1>
+
+    <table id="statusTable">
+      <thead>
+        <tr>
+          <th>サーバー</th>
+          <th>最終更新日時</th>
+          <th>ステータス</th>
+          <th>詳細メッセージ</th>
+          <th>IPアドレス</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JS がここに行を追加 -->
+      </tbody>
+    </table>
+
+    <script>
+      // GAS 側から埋め込まれた JSON 文字列をパース
+      const records = JSON.parse('<?= recordsJson ?>');
+
+      // ==========================================
+      // 日付を「yyyy/MM/dd HH:mm:ss」に整形
+      // （★ ここではもう +9時間しない。Date をそのまま表示）
+      // ==========================================
+      function formatDateJst(value) {
+        if (!value) return "";
+
+        let date = value;
+        if (!(date instanceof Date)) {
+          date = new Date(value); // ISO 文字列などから Date を生成
+        }
+
+        const pad = (n) => String(n).padStart(2, "0");
+
+        const Y = date.getFullYear();
+        const M = pad(date.getMonth() + 1);
+        const D = pad(date.getDate());
+        const h = pad(date.getHours());
+        const m = pad(date.getMinutes());
+        const s = pad(date.getSeconds());
+
+        return `${Y}/${M}/${D} ${h}:${m}:${s}`;
+      }
+
+      // ==========================================
+      // テーブル描画
+      // ==========================================
+      const tbody = document.querySelector("#statusTable tbody");
+
+      records.forEach((rec) => {
+        const tr = document.createElement("tr");
+
+        // サーバー（ラベル）
+        const tdServer = document.createElement("td");
+        tdServer.textContent = rec.serverLabel || rec.serverName || "";
+        tr.appendChild(tdServer);
+
+        // 最終更新日時（JSTでそのまま表示）
+        const tdUpdated = document.createElement("td");
+        tdUpdated.textContent = formatDateJst(rec.updatedAt);
+        tr.appendChild(tdUpdated);
+
+        // ステータス
+        const tdStatus = document.createElement("td");
+        tdStatus.textContent = rec.status || "";
+        if (rec.status === "OK") {
+          tdStatus.classList.add("status-OK");
+        } else if (rec.status === "WARN") {
+          tdStatus.classList.add("status-WARN");
+        } else if (rec.status === "CRIT") {
+          tdStatus.classList.add("status-CRIT");
+        }
+        tr.appendChild(tdStatus);
+
+        // 詳細メッセージ（改行反映）
+        const tdMessage = document.createElement("td");
+        // 改行コードを正規化してから表示（念のため）
+        const normalizedMessage = (rec.message || "")
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+        tdMessage.textContent = normalizedMessage;
+        tdMessage.classList.add("multiline");
+        tr.appendChild(tdMessage);
+
+        // IPアドレス
+        const tdIp = document.createElement("td");
+        tdIp.textContent = rec.ipAddress || "";
+        tr.appendChild(tdIp);
+
+        tbody.appendChild(tr);
+      });
+    </script>
+  </body>
+</html>
