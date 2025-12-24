@@ -8,11 +8,43 @@ set -o pipefail
 
 HOST="gsl.kwgi.org"
 SERVER_NAME="gsl.kwgi.org"
-GAS_URL=""  # 直接送る場合に設定（任意）。notify_gas.sh があれば不要。
+
+# GAS_URL を最初に指定。未設定なら GAS 設定取得エンドポイントから自動取得を試みる
+GAS_BASE_URL=""  # GAS Web App base URL。デプロイ時に設定される
+GAS_URL=""
 
 NOTIFY_HELPER="$HOME/notify_gas.sh"
 
 log() { echo "[monitor_ssl_gsl] $*" >&2; }
+
+# GAS 設定を取得するか、手動設定を使用
+get_gas_url() {
+  if [[ -n "$GAS_URL" ]]; then
+    return 0  # 既に設定済み
+  fi
+  
+  if [[ -z "$GAS_BASE_URL" ]]; then
+    log "GAS_BASE_URL が未設定です"
+    return 1
+  fi
+  
+  # GAS から設定を取得
+  local config_response
+  config_response=$(curl -fsS "${GAS_BASE_URL}?action=getConfig" 2>/dev/null) || {
+    log "GAS 設定取得失敗"
+    return 1
+  }
+  
+  GAS_URL=$(echo "$config_response" | jq -r '.gasWebAppUrl // empty' 2>/dev/null)
+  
+  if [[ -z "$GAS_URL" ]]; then
+    log "GAS_URL を設定から取得できませんでした"
+    return 1
+  fi
+  
+  log "GAS_URL を自動取得: ${GAS_URL:0:50}..."
+  return 0
+}
 
 get_notafter(){
   echo | openssl s_client -connect "${HOST}:443" -servername "${HOST}" 2>/dev/null \
@@ -48,13 +80,27 @@ post_gas(){
   fi
 
   # 直接POST: server/status/message/ip/expiryDateString を送る
-  curl -fsS -X POST "$GAS_URL" \
+  # メッセージの改行を\nから実改行に変換（シェル展開）
+  local msg_escaped
+  msg_escaped=$(printf '%s\n' "$message" | jq -Rs .)
+  
+  local payload="{\"server\":\"$SERVER_NAME\",\"status\":\"$status\",\"message\":$msg_escaped,\"ip\":\"-\",\"expiryDateString\":\"$expiry\"}"
+  log "Sending to GAS: $payload"
+  
+  curl -L -X POST "$GAS_URL" \
     -H 'Content-Type: application/json; charset=utf-8' \
-    --data "{\"server\":\"$SERVER_NAME\",\"status\":\"$status\",\"message\":$(jq -Rs . <<<"$message" 2>/dev/null || printf '"%s"' "$message" ),\"ip\":\"-\",\"expiryDateString\":\"$expiry\"}"
+    --data "$payload"
 }
 
 main(){
   local notafter days expiry_date_only status msg
+  
+  # GAS_URL を取得（未設定なら GAS から自動取得）
+  if ! get_gas_url; then
+    log "GAS_URL 取得失敗、スキップ"
+    return 1
+  fi
+  
   notafter="$(get_notafter)" || { log "証明書期限取得に失敗"; post_gas "ERROR" "SSL期限の取得に失敗" ""; exit 1; }
   days="$(calc_days "$notafter")" || { log "期限解析に失敗: $notafter"; post_gas "ERROR" "SSL期限の解析に失敗: $notafter" ""; exit 1; }
   expiry_date_only="$(date -d "$notafter" +"%Y-%m-%d 00:00:00")"
