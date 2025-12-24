@@ -1,0 +1,9 @@
+# Track core GAS source files; keep clasp metadata private
+.clasp.json
+appsscript.json
+
+# Common ignores
+*.log
+node_modules/
+.DS_Store
+Thumbs.db

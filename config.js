@@ -67,8 +67,8 @@ const CONFIG = {
 
     // --- 失敗/完了 判定語句（部分一致） ---
     alertKeywords: {
-      fail: ['失敗', '失敗しました', 'エラー'],
-      done: ['完了', '成功']
+      fail: ['失敗', '失敗しました', 'エラー', 'ERROR'],
+      done: ['完了', '成功', 'RECOVERED']
     }
   };
   

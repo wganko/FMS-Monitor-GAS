@@ -412,14 +412,15 @@ function processServerReport(params) {
   // ★ 毎回「履歴として」追記
   appendStatusLog(serverName, new Date(), status, message, ip);
 
-  // ERROR のときだけ LINE 通知
-  if (status === 'ERROR') {
+  // ERROR または RECOVERED のときだけ LINE 通知（INFO は通知しない）
+  if (status === 'ERROR' || status === 'RECOVERED') {
+    const icon = status === 'ERROR' ? '🚨' : '✅';
     const text =
-      '🚨 サーバー異常検知 🚨\n\n' +
+      icon + ' サーバー状態変化(' + status + ')' + icon + '\n\n' +
       '[サーバー] ' + serverName + '\n' +
-      '[状態] ' + message + '\n' +
+      '[詳細]\n' + message + '\n' +
       '[時間] ' +
-      Utilities.formatDate(new Date(), 'Asia/Tokyo', 'MM/dd HH:mm');
+      Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
     pushMessage(text);
   }
 
