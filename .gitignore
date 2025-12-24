@@ -17,3 +17,8 @@ windows-tasks/**/*.crt
 windows-tasks/**/*.cer
 windows-tasks/**/*.pfx
 windows-tasks/**/*.key
+
+# Linux tasks secrets
+linux-tasks/**/env.sh
+linux-tasks/**/secrets*
+linux-tasks/**/*.log
