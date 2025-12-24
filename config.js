@@ -42,7 +42,8 @@ const CONFIG = {
     dashboard: {
       targetServers: [
         { id: 'ant', name: 'ant.kwgi.org', label: 'ant.kwgi.org' },
-        { id: 'mic', name: 'mic.kwgi.org', label: 'mic.kwgi.org' }
+        { id: 'mic', name: 'mic.kwgi.org', label: 'mic.kwgi.org' },
+        { id: 'gsl', name: 'gsl.kwgi.org', label: 'gsl.kwgi.org' }
       ]
     },
   
