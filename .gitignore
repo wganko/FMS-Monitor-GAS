@@ -7,3 +7,13 @@ appsscript.json
 node_modules/
 .DS_Store
 Thumbs.db
+
+# Windows task scripts: keep PS scripts, ignore secrets/logs/certs
+windows-tasks/**/secrets*
+windows-tasks/**/*.log
+windows-tasks/**/*.tmp
+windows-tasks/**/*.bak
+windows-tasks/**/*.crt
+windows-tasks/**/*.cer
+windows-tasks/**/*.pfx
+windows-tasks/**/*.key
