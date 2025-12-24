@@ -1,0 +1,8 @@
+# /etc/cron.d/monitor-ssl (テンプレート)
+# AlmaLinux/Root 実行想定。パスは実サーバの配置に合わせて変更してください。
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# 1日1回（08:15）SSL期限監視→GAS通知
+15 8 * * * root /opt/servei/monitor/monitor_ssl_gsl.sh >> /var/log/servei/ssl-monitor.log 2>&1

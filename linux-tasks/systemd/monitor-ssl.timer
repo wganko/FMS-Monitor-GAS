@@ -1,0 +1,10 @@
+[Unit]
+Description=Run SSL expiry monitor daily at 08:15
+
+[Timer]
+OnCalendar=*-*-* 08:15:00
+Persistent=true
+Unit=monitor-ssl.service
+
+[Install]
+WantedBy=timers.target

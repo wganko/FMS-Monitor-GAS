@@ -1,0 +1,8 @@
+# /etc/cron.d/cf-ddns (テンプレート)
+# AlmaLinux/Root 実行想定。パスは実サーバの配置に合わせて変更してください。
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# 10分ごとにCloudflare DDNS更新
+*/10 * * * * root /opt/servei/ddns/cf-ddns.sh >> /var/log/servei/ddns.log 2>&1

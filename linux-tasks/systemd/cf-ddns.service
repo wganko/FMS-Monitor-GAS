@@ -1,0 +1,13 @@
+[Unit]
+Description=Cloudflare DDNS updater
+Wants=cf-ddns.timer
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/opt/servei/ddns/cf-ddns.sh
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

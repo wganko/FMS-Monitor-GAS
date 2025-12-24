@@ -1,0 +1,13 @@
+[Unit]
+Description=SSL expiry monitor for gsl.kwgi.org
+Wants=monitor-ssl.timer
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/opt/servei/monitor/monitor_ssl_gsl.sh
+Nice=10
+
+[Install]
+WantedBy=multi-user.target
